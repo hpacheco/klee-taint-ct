@@ -1671,6 +1671,10 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
           state.setPCTaint( state.getPCTaint() | eval(ki, 0, state).taint );
       }
 
+      if (eval(ki, 0, state).taint == TaintType::TaintSecret)
+        errs_once(ki) << "[!] Branch-based leakage detected\n\t" << *ki->inst << "\n\t" << "in '" << ki->info->file
+                      << "':" << ki->info->line << ":" << ki->info->column << "\n";
+
       Executor::StatePair branches = fork(state, eval(ki, 0, state).value, false);
 
       // NOTE: There is a hidden dependency here, markBranchVisited
@@ -1997,6 +2001,9 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
     Cell right = eval(ki, 1, state);
     bindLocal(ki, state, UDivExpr::create(left.value, right.value), 
                          left.taint | right.taint);
+    if (getDestCell(state, ki).taint == klee::TaintSecret)
+        errs_once(ki) << "[!] Constant-time violation detected\n\t" << *ki->inst << "\n\t" << "in '" << ki->info->file
+                      << "':" << ki->info->line << ":" << ki->info->column << "\n";
     break;
   }
 
@@ -2163,12 +2170,24 @@ void Executor::executeInstruction(ExecutionState &state, KInstruction *ki) {
   }
 
   case Instruction::Load: {
-    executeMemoryOperation(state, false, eval(ki, 0, state).value, 0, ki, eval(ki, 0, state).taint, 0);
-    break;
+    Cell left = eval(ki, 0, state);
+
+    if (left.taint == TaintType::TaintSecret)
+        errs_once(ki) << "[!] Cache-based leakage detected\n\t" << *ki->inst << "\n\t" << "in '" << ki->info->file
+                      << "':" << ki->info->line << ":" << ki->info->column << "\n";
+
+    executeMemoryOperation(state, false, left.value, 0, ki, left.taint, 0);    break;
   }
   case Instruction::Store: {
-    executeMemoryOperation(state, true, eval(ki, 1, state).value, eval(ki, 0, state).value, ki, eval(ki, 1, state).taint, eval(ki, 0, state).taint);
-    break;
+    Cell left = eval(ki, 0, state);
+    Cell right = eval(ki, 1, state);
+
+    if (right.taint == TaintType::TaintSecret)
+        errs_once(ki) << "[!] Cache-based leakage detected\n\t" << *ki->inst << "\n\t" << "in '" << ki->info->file
+                      << "':" << ki->info->line << ":" << ki->info->column << "\n";
+
+    executeMemoryOperation(state, true, right.value, left.value, ki,
+                           right.taint, left.taint);    break;
   }
 
   case Instruction::GetElementPtr: {
