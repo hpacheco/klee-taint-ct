@@ -110,6 +110,8 @@ RUN sudo ln -s /usr/bin/clang /usr/bin/clang-${LLVM_VERSION} && \
 
 # Build KLEE (use TravisCI script)
 RUN cd ${BUILD_DIR} && ${KLEE_SRC}/.travis/klee.sh
+# For running the examples
+RUN sudo apt -y install time
 
 # Revoke password-less sudo and Set up sudo access for the ``klee`` user so it
 # requires a password

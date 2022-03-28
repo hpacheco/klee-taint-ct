@@ -19,11 +19,9 @@ INCLUDE_DIRS+=-I . -I $(SELF_DIR)/../../include/ -I $(SELF_DIR)/openssl/build/in
 KLEE_LIB_ARGS?=--libc=uclibc --posix-runtime -link-llvm-lib=$(SELF_DIR)/openssl/build/crypto/libcrypto.bc
 
 KLEE_COMMAND=/usr/bin/time -v klee -allocate-determ -allocate-determ-start-address=0x00040000000 -allocate-determ-size=1000 \
-							--disable-verify -write-sym-paths -dump-call-traces -dump-call-trace-tree -dump-constraint-tree \
+							--disable-verify -write-sym-paths \
 							-taint=direct $(KLEE_LIB_ARGS) \
-							-solver-backend=z3 -exit-on-error -max-memory=750000 -search=dfs -condone-undeclared-havocs \
-                                                        -dump-call-trace-instructions -call-trace-instr-startfn=main -call-trace-instr-endfn=main \
-#                                                        -const-array-opt=true -optimize-array=all
+							-solver-backend=z3 -exit-on-error -max-memory=750000 -search=dfs 
 
 clean:
 	rm -Rf klee-*
