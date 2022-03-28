@@ -1,0 +1,54 @@
+diff --git a/crypto/rsa/rsa_gen.c b/crypto/rsa/rsa_gen.c
+index eb58047a21..9e579e2a7e 100644
+--- a/crypto/rsa/rsa_gen.c
++++ b/crypto/rsa/rsa_gen.c
+@@ -1,3 +1,6 @@
++#include <klee/klee.h>
++#include "../bn/bn_local.h"
++
+ /*
+  * Copyright 1995-2021 The OpenSSL Project Authors. All Rights Reserved.
+  *
+@@ -132,9 +135,11 @@ static int rsa_multiprime_keygen(RSA *rsa, int bits, int primes,
+         goto err;
+     if (!rsa->p && ((rsa->p = BN_secure_new()) == NULL))
+         goto err;
++// vvv
+     BN_set_flags(rsa->p, BN_FLG_CONSTTIME);
+     if (!rsa->q && ((rsa->q = BN_secure_new()) == NULL))
+         goto err;
++// vvv
+     BN_set_flags(rsa->q, BN_FLG_CONSTTIME);
+     if (!rsa->dmp1 && ((rsa->dmp1 = BN_secure_new()) == NULL))
+         goto err;
+@@ -184,6 +189,7 @@ static int rsa_multiprime_keygen(RSA *rsa, int bits, int primes,
+             pinfo = sk_RSA_PRIME_INFO_value(prime_infos, i - 2);
+             prime = pinfo->r;
+         }
++// vvv
+         BN_set_flags(prime, BN_FLG_CONSTTIME);
+ 
+         for (;;) {
+@@ -382,12 +388,22 @@ static int rsa_multiprime_keygen(RSA *rsa, int bits, int primes,
+         BN_free(d);
+     }
+ 
++
++//    klee_make_symbolic(rsa->q->d, sizeof(BN_ULONG), "q");
++//    klee_set_taint(1, rsa->q->d, sizeof(BN_ULONG));
++
+     {
+         BIGNUM *p = BN_new();
+ 
+         if (p == NULL)
+             goto err;
++// vvv switch
+         BN_with_flags(p, rsa->p, BN_FLG_CONSTTIME);
++//        BN_with_flags(p, rsa->p, 0);
++
++    klee_make_symbolic(p->d, sizeof(BN_ULONG), "digit0");
++    klee_set_taint(1, p->d, sizeof(BN_ULONG));
++
+ 
+         /* calculate inverse of q mod p */
+         if (!BN_mod_inverse(rsa->iqmp, rsa->q, p, ctx)) {
