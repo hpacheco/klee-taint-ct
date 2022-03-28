@@ -30,7 +30,7 @@ fi
 # klee-uclibc
 ###############################################################################
 if [ "${KLEE_UCLIBC}" != "0" ]; then
-    git clone --depth 1 -b ${KLEE_UCLIBC} git://github.com/klee/klee-uclibc.git
+    git clone --depth 1 -b ${KLEE_UCLIBC} https://github.com/klee/klee-uclibc
     cd klee-uclibc
     ./configure --make-llvm-lib --with-cc "${KLEE_CC}" --with-llvm-config /usr/bin/llvm-config-${LLVM_VERSION}
     make
@@ -150,8 +150,8 @@ if [ "X${USE_CMAKE}" == "X1" ]; then
     -DGTEST_SRC_DIR=${GTEST_SRC_DIR} \
     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} \
     ${KLEE_ASSERTS_OPTION} \
-    -DENABLE_UNIT_TESTS=TRUE \
-    -DENABLE_SYSTEM_TESTS=TRUE \
+    -DENABLE_UNIT_TESTS=FALSE \
+    -DENABLE_SYSTEM_TESTS=FALSE \
     -DLIT_ARGS="-v" \
     ${KLEE_SRC}
   make
@@ -180,37 +180,37 @@ fi
 ###############################################################################
 # Unit tests
 ###############################################################################
-if [ "X${USE_CMAKE}" == "X1" ]; then
-  make unittests
-else
-  # The unittests makefile doesn't seem to have been packaged so get it from SVN
-  sudo mkdir -p /usr/lib/llvm-${LLVM_VERSION}/build/unittests/
-  svn export  http://llvm.org/svn/llvm-project/llvm/branches/${SVN_BRANCH}/unittests/Makefile.unittest \
-      ../Makefile.unittest
-  sudo mv ../Makefile.unittest /usr/lib/llvm-${LLVM_VERSION}/build/unittests/
-
-  make unittests \
-      DISABLE_ASSERTIONS=${DISABLE_ASSERTIONS} \
-      ENABLE_OPTIMIZED=${ENABLE_OPTIMIZED} \
-      ENABLE_SHARED=0
-fi
+#if [ "X${USE_CMAKE}" == "X1" ]; then
+#  make unittests
+#else
+#  # The unittests makefile doesn't seem to have been packaged so get it from SVN
+#  sudo mkdir -p /usr/lib/llvm-${LLVM_VERSION}/build/unittests/
+#  svn export  http://llvm.org/svn/llvm-project/llvm/branches/${SVN_BRANCH}/unittests/Makefile.unittest \
+#      ../Makefile.unittest
+#  sudo mv ../Makefile.unittest /usr/lib/llvm-${LLVM_VERSION}/build/unittests/
+#
+#  make unittests \
+#      DISABLE_ASSERTIONS=${DISABLE_ASSERTIONS} \
+#      ENABLE_OPTIMIZED=${ENABLE_OPTIMIZED} \
+#      ENABLE_SHARED=0
+#fi
 
 ###############################################################################
 # lit tests
 ###############################################################################
-if [ "X${USE_CMAKE}" == "X1" ]; then
-  make systemtests
-else
-  # Note can't use ``make check`` because llvm-lit is not available
-  cd test
-  # The build system needs to generate this file before we can run lit
-  make lit.site.cfg \
-      DISABLE_ASSERTIONS=${DISABLE_ASSERTIONS} \
-      ENABLE_OPTIMIZED=${ENABLE_OPTIMIZED} \
-      ENABLE_SHARED=0
-  cd ../
-  lit -v test/
-fi
+#if [ "X${USE_CMAKE}" == "X1" ]; then
+#  make systemtests
+#else
+#  # Note can't use ``make check`` because llvm-lit is not available
+#  cd test
+#  # The build system needs to generate this file before we can run lit
+#  make lit.site.cfg \
+#      DISABLE_ASSERTIONS=${DISABLE_ASSERTIONS} \
+#      ENABLE_OPTIMIZED=${ENABLE_OPTIMIZED} \
+#      ENABLE_SHARED=0
+#  cd ../
+#  lit -v test/
+#fi
 
 # If metaSMT is the only solver, then rerun lit tests with non-default metaSMT backends
 if [ "X${SOLVERS}" == "XmetaSMT" ]; then
@@ -234,14 +234,14 @@ if [ ${COVERAGE} -eq 1 ]; then
     cd zcov
 
 #these files are not where zcov expects them to be after install so we move them
-    sudo cp js/sorttable.js /usr/local/lib/python2.7/dist-packages/zcov-0.3.0.dev0-py2.7.egg/zcov/js/sorttable.js 
-    sudo cp js/sourceview.js /usr/local/lib/python2.7/dist-packages/zcov-0.3.0.dev0-py2.7.egg/zcov/js/sourceview.js 
+    sudo cp js/sorttable.js /usr/local/lib/python2.7/dist-packages/zcov-0.3.0.dev0-py2.7.egg/zcov/js/sorttable.js
+    sudo cp js/sourceview.js /usr/local/lib/python2.7/dist-packages/zcov-0.3.0.dev0-py2.7.egg/zcov/js/sourceview.js
     sudo cp style.css /usr/local/lib/python2.7/dist-packages/zcov-0.3.0.dev0-py2.7.egg/zcov/style.css
 
 #install zcov dependency
     sudo apt-get install -y enscript
 
-#update gcov from v4.6 to v4.8. This is becauase gcda files are made for v4.8 and cause 
+#update gcov from v4.6 to v4.8. This is becauase gcda files are made for v4.8 and cause
 #a segmentation fault in v4.6
     sudo apt-get install -y ggcov
     sudo rm /usr/bin/gcov

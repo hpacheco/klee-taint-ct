@@ -13,8 +13,11 @@ if (HAVE_PTY_H)
     klee-replay.c
     klee_init_env.c
   )
+  add_library(libcryptominisat4 STATIC IMPORTED)
+  set_target_properties(libcryptominisat4 PROPERTIES IMPORTED_LOCATION /usr/lib/libcryptominisat4.a)
+  set_target_properties(libcryptominisat4 PROPERTIES INTERFACE_INCLUDE_DIRECTORIES /usr/include)
 
-  target_link_libraries(klee-replay PRIVATE kleeBasic ${LIBCAP_LIBRARIES})
+  target_link_libraries(klee-replay PRIVATE kleeBasic ${LIBCAP_LIBRARIES} libcryptominisat4)
   # FIXME: This isn't quite right. This is actually an implementation detail
   # of glibc not Linux. Really we need to test if we can use `openpty()`
   # with/without an additional library.

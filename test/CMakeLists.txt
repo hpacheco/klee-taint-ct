@@ -7,6 +7,10 @@
 #
 #===------------------------------------------------------------------------===#
 
+add_library(libcryptominisat4 STATIC IMPORTED)
+set_target_properties(libcryptominisat4 PROPERTIES IMPORTED_LOCATION /usr/lib/libcryptominisat4.a)
+set_target_properties(libcryptominisat4 PROPERTIES INTERFACE_INCLUDE_DIRECTORIES /usr/include)
+
 set(KLEE_TOOLS_DIR "${CMAKE_BINARY_DIR}/bin")
 set(LLVM_TOOLS_DIR "${LLVM_TOOLS_BINARY_DIR}")
 # FIXME: Do this to avoid changing the template file that
@@ -79,7 +83,7 @@ if (DOWNLOAD_FILECHECK_SOURCE)
   target_include_directories(FileCheck PRIVATE ${KLEE_COMPONENT_EXTRA_INCLUDE_DIRS})
   target_compile_options(FileCheck PRIVATE ${KLEE_COMPONENT_CXX_FLAGS})
   target_compile_definitions(FileCheck PRIVATE ${KLEE_COMPONENT_CXX_DEFINES})
-  target_link_libraries(FileCheck PRIVATE ${FILECHECK_NEEDED_LIBS})
+  target_link_libraries(FileCheck PRIVATE ${FILECHECK_NEEDED_LIBS} libcryptominisat4)
 endif()
 
 if (DOWNLOAD_NOT_SOURCE)
@@ -96,7 +100,7 @@ if (DOWNLOAD_NOT_SOURCE)
   target_include_directories("not" PRIVATE ${KLEE_COMPONENT_EXTRA_INCLUDE_DIRS})
   target_compile_options("not" PRIVATE ${KLEE_COMPONENT_CXX_FLAGS})
   target_compile_definitions("not" PRIVATE ${KLEE_COMPONENT_CXX_DEFINES})
-  target_link_libraries("not" PRIVATE ${FILECHECK_NEEDED_LIBS})
+  target_link_libraries("not" PRIVATE ${FILECHECK_NEEDED_LIBS} libcryptominisat4)
 endif()
 
 ###############################################################################

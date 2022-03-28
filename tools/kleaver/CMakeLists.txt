@@ -14,6 +14,10 @@ set(KLEE_LIBS
   kleaverSolver
 )
 
-target_link_libraries(kleaver ${KLEE_LIBS})
+add_library(libcryptominisat4 STATIC IMPORTED)
+set_target_properties(libcryptominisat4 PROPERTIES IMPORTED_LOCATION /usr/lib/libcryptominisat4.a)
+set_target_properties(libcryptominisat4 PROPERTIES INTERFACE_INCLUDE_DIRECTORIES /usr/include)
+
+target_link_libraries(kleaver ${KLEE_LIBS} libcryptominisat4)
 
 install(TARGETS kleaver RUNTIME DESTINATION bin)
